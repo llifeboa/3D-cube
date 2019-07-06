@@ -3,14 +3,25 @@ const canvas = document.getElementById('scene');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const width = canvas.offsetWidth; // Width of the scene
-const height = canvas.offsetHeight; // Height of the scene
+let width = canvas.offsetWidth; // Width of the scene
+let height = canvas.offsetHeight; // Height of the scene
 const size = Math.max(width, height); // go to square
 
 const ctx = canvas.getContext('2d');
 
-const centerX = width / 2;
-const centerY = height / 2;
+let centerX = width / 2;
+let centerY = height / 2;
+
+window.addEventListener('resize', ()=>{
+	console.log('resized');
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+	width = canvas.offsetWidth; // Width of the scene
+	height = canvas.offsetHeight; // Height of the scene
+	centerX = width / 2;
+	centerY = height / 2;
+});
+
 const STEP = 0.1;
 
 class Dot{

@@ -19,9 +19,30 @@ class Dot{
 		this.y = y;
 		this.z = z;
 		this.radius = radius;
-		this.scale = 1000;
+		this.scale = 1500;
+		this.b = Math.floor((this.y + 1.0) / 2.0 * 255);
+		this.r = Math.floor(100 + ((this.x + 1.0) / 2.0 * 155));
+		this.g = Math.floor((this.z + 1.0) / 2.0 * 100);
 		
 	}
+	//Rotation
+
+	rotateY(theta){
+		const x = this.x;
+		const z = this.z;
+		this.x = Math.cos(theta) * x - Math.sin(theta) * z;
+		this.z = Math.sin(theta) * x + Math.cos(theta) * z;
+	}
+
+	rotateX(theta)
+	{
+		const y = this.y;
+		const z = this.z;
+		this.y = Math.cos(theta) * y - Math.sin(theta) * z;
+		this.z = Math.sin(theta) * y + Math.cos(theta) * z;
+	}
+
+	//END - Rotation
 
 	projection()
 	{
@@ -30,30 +51,24 @@ class Dot{
 	}
 	
 	render(){
+		let a = ((-this.z + 1) / 2).toFixed(1);
 		const newPos = this.projection();
 		ctx.beginPath();
-		let b = ((this.y + 1.0) / 2.0 * 255);
-		b = Math.floor(b);
+		ctx.arc(newPos[0], newPos[1], this.radius * 8, 0, Math.PI * 2);
+		ctx.fillStyle = 'rgba(' + this.r + ', ' + this.g + ', ' + this.b + ', ' + a / 20 + ')';
+		ctx.fill();
+		ctx.beginPath();
+		ctx.arc(newPos[0], newPos[1], this.radius * 4, 0, Math.PI * 2);
+		ctx.fillStyle = 'rgba(' + this.r + ', ' + this.g + ', ' + this.b + ', ' + a / 10 + ')';
+		ctx.fill();
+		ctx.beginPath();
 		ctx.arc(newPos[0], newPos[1], this.radius, 0, Math.PI * 2);
-		ctx.fillStyle = 'rgba(255, 0, ' + b + ', 1)';
+		ctx.fillStyle = 'rgba(' + this.r + ', ' + this.g + ', ' + this.b + ', ' + a + ')';
 		ctx.fill();
 	}
 }
 
-function rotateY(point, theta)
-{
-	let x = point.x;
-	let z = point.z;
-	point.x = Math.cos(theta) * x - Math.sin(theta) * z;
-	point.z = Math.sin(theta) * x + Math.cos(theta) * z;
-}
-function rotateX(point, theta)
-{
-	let y = point.y - 2;
-	let z = point.z - 2;
-	point.y = Math.cos(theta) * y - Math.sin(theta) * z + 2;
-	point.z = Math.sin(theta) * y + Math.cos(theta) * z + 2;
-}
+
 
 let dots = [];
 
@@ -61,39 +76,45 @@ for(let x = -1; x <= 1; x += STEP){
 	for(let y = -1; y <= 1; y += STEP){
 		for(let z = -1; z <= 1; z += STEP){
 			if((z.toFixed(4) == 1 || z == -1) || (y == -1 || y.toFixed(4) == 1) || (x.toFixed(4) == 1 || x == -1))
-				dots.push(new Dot(x, y, z, 1));
+			//if(z > 0 || x < 0 || y > 0)
+			//if (Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2) < 1.1 && Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2) > 0.9)
+				dots.push(new Dot(x, y, z, 2));
 			
 		}
 	}
 }
 
 let lastX = 0;
-window.dtheta = 0;
+let lastY = 0;
+
+const dtheta = 0.001;
 canvas.addEventListener('mousemove', (event)=>{
-	if (lastX - event.clientX > 0)
-		window.dtheta = -0.02;
-	else if (lastX - event.clientX < 0)
-		window.dtheta = 0.02;
-	else
-		window.theta = 0
+	const dx = lastX - event.clientX;
+	const dy = lastY - event.clientY;
+	let x_theta = - dy * dtheta;
+	let y_theta = - dx * dtheta;
+	if (x_theta != 0 || y_theta != 0)
+		dots.forEach((dot)=>{
+			if (x_theta != 0 )
+				dot.rotateX(x_theta);
+			if (y_theta != 0 )
+				dot.rotateY(y_theta);
+		})
 	lastX = event.clientX;
+	lastY = event.clientY;
 
 });
 
-function main() {
+(function main() {
 	ctx.rect(0, 0, width, height);
-	ctx.fillStyle ='black';
+	ctx.fillStyle ='#111';
 	ctx.fill();
 	dots.forEach((dot)=>{
-		rotateY(dot, window.dtheta);
+		// rotateY(dot, window.dtheta);
+		// rotateX(dot, -window.dtheta / 2);
 		dot.render();
 
 	});
 	
   window.requestAnimationFrame(main);
-}
-
-
-
-
-main();
+})();
